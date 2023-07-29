@@ -12,8 +12,9 @@ import pytest
 def _generate_random_string() -> str:
     characters = string.ascii_letters
     return ''.join(random.choice(characters) for i in range(8))
-class TestDemo:
 
+
+class TestDemo:
     username: str = _generate_random_string()
     password: str = _generate_random_string()
     basic_url: str = "https://www.demoblaze.com/"
@@ -27,8 +28,6 @@ class TestDemo:
 
     @pytest.fixture(scope="class", autouse=True)
     def sign_up(self, driver):
-        # driver = webdriver.Chrome()
-        # driver.maximize_window()
         driver.get(self.basic_url)
         sign_up_to_demo_blaze(driver, self.username, self.password)
         yield
@@ -50,8 +49,6 @@ class TestDemo:
     def test_api(self, product_name):
         add_product_to_cart(self.base_api_url, self.username, self.password, product_name)
 
-
-
     # if __name__ == "__main__":
     #     username = _generate_random_string()
     #     password = _generate_random_string()
@@ -59,6 +56,3 @@ class TestDemo:
     #     ui_test(driver, username, password)
     #     base_url ="https://api.demoblaze.com"
     #     add_product_to_cart(base_url, username, password, "Nexus 6")
-
-
-
