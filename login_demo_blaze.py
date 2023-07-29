@@ -34,8 +34,8 @@ if __name__ == "__main__":
     # driver = webdriver.Chrome()
     # ui_test(driver, username, password)
     base_url ="https://api.demoblaze.com"
-    product_id = 3
-    add_product_to_cart(base_url, "mshopen", "mishmish1", product_id)
+    product_name = "Nexus 6"
+    add_product_to_cart(base_url, "mshopen", "mishmish1", product_name)
 
 
 
