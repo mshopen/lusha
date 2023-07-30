@@ -1,8 +1,8 @@
 from selenium import webdriver
 from selenium.common import WebDriverException
-from api_utils import add_product_to_cart, validate_cart_product_content, login
+from api_utils import add_product_to_cart, validate_cart_product_content, login, ProductData
 from selenium_utils import add_products_to_cart, \
-    validate_cart, place_order_and_validate_price, sign_up_to_demo_blaze, login_to_demo_blaze
+    validate_cart, place_order_and_validate_price, sign_up_to_demo_blaze, login_to_demo_blaze, log_out, OrderData
 import random
 import string
 import pytest
@@ -22,15 +22,16 @@ class TestDemo:
     @pytest.fixture(scope="session")
     def driver(self):
         driver = webdriver.Chrome()
+        driver.delete_all_cookies()
         driver.maximize_window()
         yield driver
+        driver.quit()
 
     @pytest.fixture(scope="class", autouse=True)
     def sign_up(self, driver):
         driver.get(self.basic_url)
         sign_up_to_demo_blaze(driver, self.username, self.password)
         yield
-        driver.quit()
 
     def test_ui(self, driver):
         try:
@@ -38,8 +39,8 @@ class TestDemo:
             products_to_buy = ["Nexus 6", "MacBook Pro"]
             add_products_to_cart(driver, products_to_buy)
             total_price = validate_cart(driver, products_to_buy)
-            place_order_and_validate_price(driver, total_to_pay=total_price, name=self.username, country='Israel',
-                                           credit_card='123456', month='09', year='2026')
+            order_data = OrderData(name=self.username, country='Israel', card='123456', month='09', year='2026')
+            place_order_and_validate_price(driver, total_price, order_data)
             print("UI Test passed!")
         except WebDriverException as wde:
             pytest.fail(wde.msg)
@@ -48,4 +49,5 @@ class TestDemo:
     def test_api(self, product_name):
         token = login(self.base_api_url, self.username, self.password)
         add_product_to_cart(self.base_api_url, token, product_name)
-        assert validate_cart_product_content(self.base_api_url, token, 1, {'price': 650, "name": product_name, "id": 3})
+        product_data = ProductData(3, product_name, 650)
+        assert validate_cart_product_content(self.base_api_url, token, 1, product_data)

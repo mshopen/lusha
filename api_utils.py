@@ -1,7 +1,16 @@
+from dataclasses import dataclass
+
 import requests
 import json
 import base64
 import uuid
+
+
+@dataclass
+class ProductData:
+    id: int
+    name: str
+    price: int
 
 
 def login(base_url, user, password) -> str:
@@ -77,7 +86,7 @@ def get_product_data_by_id(base_url, produce_id: int) -> dict:
 
 
 def validate_cart_product_content(base_url: str, token: str, expected_num_items: int,
-                                  expected_product_data: dict) -> bool:
+                                  expected_product_data: ProductData) -> bool:
     cart_endpoint = "/viewcart"
     request_data = {
         "id": str(uuid.uuid4()),
@@ -96,13 +105,15 @@ def validate_cart_product_content(base_url: str, token: str, expected_num_items:
         f"Number of items in cart does not equal expected number: {expected_num_items}"
 
     for item in items:
-        if item['prod_id'] == expected_product_data['id']:
-            product = get_product_data_by_id(base_url, expected_product_data['id'])
-            if product['price'] != expected_product_data['price']:
-                print(f"Product price is {product['price']}, expected {expected_product_data['price']}")
+        if item['prod_id'] == expected_product_data.id:
+            product = get_product_data_by_id(base_url, expected_product_data.id)
+            if product['price'] != expected_product_data.price:
+                print(f"Product price is {product['price']}, expected {expected_product_data.price}")
                 return False
-            if product['title'] != expected_product_data['name']:
-                print(f"Product name is {product['title']}, expected {expected_product_data['name']}")
+            if product['title'] != expected_product_data.name:
+                print(f"Product name is {product['title']}, expected {expected_product_data.name}")
                 return False
-    print(f"Cart validation successful for product: {expected_product_data['name']}")
-    return True
+            print(f"Cart validation successful for product: {expected_product_data.name}")
+            return True
+    print(f"Product {expected_product_data.name} was not found in cart!")
+    return False

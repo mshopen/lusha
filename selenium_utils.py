@@ -1,3 +1,6 @@
+from dataclasses import dataclass, asdict
+from typing import Optional
+
 from selenium.common import TimeoutException, NoSuchElementException, WebDriverException, \
     StaleElementReferenceException
 from selenium.webdriver.chrome.webdriver import WebDriver
@@ -7,6 +10,16 @@ from selenium.webdriver.support.wait import WebDriverWait
 import re
 
 IGNORED_EXCEPTIONS = (NoSuchElementException, StaleElementReferenceException)
+
+
+@dataclass
+class OrderData:
+    name: str
+    card: str
+    country: Optional[str] = None
+    city: Optional[str] = None
+    month: Optional[str] = None
+    year: Optional[str] = None
 
 
 def driver_exception_handler(func):
@@ -38,6 +51,11 @@ def login_to_demo_blaze(driver, username, password):
 
 
 @driver_exception_handler
+def log_out(driver):
+    driver.find_element(By.ID, "logout2").click()
+
+
+@driver_exception_handler
 def sign_up_to_demo_blaze(driver, username, password):
     driver.find_element(By.ID, "signin2").click()
     sign_up_element = wait_for_element_visible(driver, "signInModal", timeout=3)
@@ -63,7 +81,7 @@ def validate_login_successful(driver: WebDriver, username: str):
         raise Exception("Login failed!")
 
 
-def validate_and_accept_alert(driver: WebDriver, success_message: str, timeout=1):
+def validate_and_accept_alert(driver: WebDriver, success_message: str, timeout=2):
     WebDriverWait(driver, timeout).until(EC.alert_is_present(),
                                          'Timed out waiting for alert!')
     alert = driver.switch_to.alert
@@ -124,21 +142,19 @@ def validate_cart(driver, product_names: []) -> int:
 
 
 @driver_exception_handler
-def place_order_and_validate_price(driver, total_to_pay: int, name: str, credit_card: str, **kwargs):
+def place_order_and_validate_price(driver, total_to_pay: int, order_data: OrderData):
     wait_for_element_clickable(driver, element_locator="//button[text()='Place Order']", by=By.XPATH).click()
     wait_for_element_visible(driver, "orderModal")
-    if name != '' and credit_card != '':
-        driver.find_element(By.ID, "name").send_keys(name)
-        driver.find_element(By.ID, "card").send_keys(credit_card)
+    if order_data.name != '' and order_data.card != '':
+        order_data_dict = asdict(order_data)
+        for key in order_data_dict:
+            if order_data_dict[key]:
+                driver.find_element(By.ID, key).send_keys(order_data_dict[key])
     else:
         raise Exception('Name and Card values not provided!')
-    for key in kwargs:
-        if key in ['country', 'city', 'month', 'year']:
-            driver.find_element(By.ID, key).send_keys(kwargs[key])
+
     driver.find_element(By.XPATH, "//button[text()='Purchase']").click()
     purchase_text = driver.find_element(By.CLASS_NAME, "sweet-alert.showSweetAlert.visible").text
     paid_amount = int(re.findall(r'\d+', re.findall(r'Amount: \d+', purchase_text)[0])[0])
     assert total_to_pay == paid_amount, "Total paid amount is incorrect!"
     driver.find_element(By.CLASS_NAME, "confirm.btn.btn-lg.btn-primary").click()
-
-
