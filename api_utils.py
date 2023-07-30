@@ -25,9 +25,8 @@ def login(base_url, user, password) -> str:
         return None
 
 
-def add_product_to_cart(base_url, user, password, product_name) -> str:
+def add_product_to_cart(base_url, token, product_name):
     add_to_cart_endpoint = "/addtocart"
-    token = login(base_url, user, password)
     if not token:
         print("Could not get token!")
         return
@@ -51,7 +50,6 @@ def add_product_to_cart(base_url, user, password, product_name) -> str:
     else:
         print(f"Failed to add product to cart. Message was:  {cart_response.text}")
         return
-    return token
 
 
 def get_product_data_by_name(base_url, produce_name: str) -> dict:

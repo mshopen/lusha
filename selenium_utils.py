@@ -124,7 +124,7 @@ def validate_cart(driver, product_names: []) -> int:
 
 
 @driver_exception_handler
-def place_order_and_validate(driver, total_to_pay: int, name: str, credit_card: str, **kwargs):
+def place_order_and_validate_price(driver, total_to_pay: int, name: str, credit_card: str, **kwargs):
     wait_for_element_clickable(driver, element_locator="//button[text()='Place Order']", by=By.XPATH).click()
     wait_for_element_visible(driver, "orderModal")
     if name != '' and credit_card != '':
