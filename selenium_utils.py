@@ -139,3 +139,6 @@ def place_order_and_validate_price(driver, total_to_pay: int, name: str, credit_
     purchase_text = driver.find_element(By.CLASS_NAME, "sweet-alert.showSweetAlert.visible").text
     paid_amount = int(re.findall(r'\d+', re.findall(r'Amount: \d+', purchase_text)[0])[0])
     assert total_to_pay == paid_amount, "Total paid amount is incorrect!"
+    driver.find_element(By.CLASS_NAME, "confirm.btn.btn-lg.btn-primary").click()
+
+
