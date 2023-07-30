@@ -1,7 +1,6 @@
 from selenium import webdriver
 from selenium.common import WebDriverException
-
-from api_utils import add_product_to_cart
+from api_utils import add_product_to_cart, validate_cart_product_content
 from selenium_utils import add_products_to_cart, \
     validate_cart, place_order_and_validate, sign_up_to_demo_blaze, login_to_demo_blaze
 import random
@@ -31,7 +30,7 @@ class TestDemo:
         driver.get(self.basic_url)
         sign_up_to_demo_blaze(driver, self.username, self.password)
         yield
-        driver.close()
+        driver.quit()
 
     def test_ui(self, driver):
         try:
@@ -47,12 +46,5 @@ class TestDemo:
 
     @pytest.mark.parametrize("product_name", [pytest.param("Nexus 6")])
     def test_api(self, product_name):
-        add_product_to_cart(self.base_api_url, self.username, self.password, product_name)
-
-    # if __name__ == "__main__":
-    #     username = _generate_random_string()
-    #     password = _generate_random_string()
-    #     driver = webdriver.Chrome()
-    #     ui_test(driver, username, password)
-    #     base_url ="https://api.demoblaze.com"
-    #     add_product_to_cart(base_url, username, password, "Nexus 6")
+        token = add_product_to_cart(self.base_api_url, self.username, self.password, product_name)
+        assert validate_cart_product_content(self.base_api_url, token, 1, {'price': 650, "name": product_name, "id": 3})
