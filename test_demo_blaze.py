@@ -8,6 +8,7 @@ import string
 import pytest
 
 
+
 def _generate_random_string() -> str:
     characters = string.ascii_letters
     return ''.join(random.choice(characters) for i in range(8))
@@ -45,9 +46,8 @@ class TestDemo:
         except WebDriverException as wde:
             pytest.fail(wde.msg)
 
-    @pytest.mark.parametrize("product_name", [pytest.param("Nexus 6")])
-    def test_api(self, product_name):
+    @pytest.mark.parametrize("product_data", [pytest.param(ProductData(3, "Nexus 6", 650), id="Nexus 6")])
+    def test_api(self, product_data):
         token = login(self.base_api_url, self.username, self.password)
-        add_product_to_cart(self.base_api_url, token, product_name)
-        product_data = ProductData(3, product_name, 650)
+        add_product_to_cart(self.base_api_url, token, product_data.name)
         assert validate_cart_product_content(self.base_api_url, token, 1, product_data)
